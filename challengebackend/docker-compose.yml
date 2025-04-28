@@ -1,0 +1,48 @@
+version: '3.8' # Especifica la versión de la sintaxis de Compose
+
+services:
+  # Servicio para la base de datos PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: challenge_db_container # Nombre opcional para el contenedor
+    environment:
+      POSTGRES_DB:  challengebackend
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456789
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - challenge_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d challengebackend"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Servicio para tu aplicación Spring Boot
+  app:
+    build: . # Construye la imagen usando el Dockerfile en el directorio actual (.)
+    container_name: challenge_app_container # Nombre opcional para el contenedor
+    depends_on:
+      db: # Indica que 'app' depende de 'db'
+        condition: service_healthy # Espera a que el healthcheck de 'db' sea exitoso
+    environment:
+      # Sobrescribe las propiedades de Spring Boot para conectar a la BD dentro de Docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/challengebackend # Usa 'db' (nombre del servicio) como host
+      SPRING_DATASOURCE_USERNAME: postgres # Usuario definido en el servicio 'db'
+      SPRING_DATASOURCE_PASSWORD: 123456789  # ¡USA LA MISMA CONTRASEÑA QUE ARRIBA!
+
+    ports:
+      - "8080:8082"
+    networks:
+      - challenge_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  challenge_network:
+    driver: bridge

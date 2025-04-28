@@ -3,7 +3,10 @@ package com.juandavid.springboot.challengebackend.service;
 import com.juandavid.springboot.challengebackend.entity.CallHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public interface HistoryService {
 
     // void: No devuelve nada porque su propósito es realizar una acción (guardar
